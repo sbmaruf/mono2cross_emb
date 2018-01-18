@@ -28,7 +28,12 @@ emb_model = model(src_emb, tgt_emb)
 
 disc_optimizer = getOptimizer(0, .1)
 map_optimizer = getOptimizer(0, .1)
-train_step = grad_compute(map_optimizer, disc_optimizer)
+
+map_train_step, \
+disc_train_step = grad_compute(map_optimizer,
+                               disc_optimizer,
+                               emb_model)
+
 
 
 # for i_epoch in range(num_of_epoch):

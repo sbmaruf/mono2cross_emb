@@ -39,7 +39,7 @@ def load_emb(src_add, embed_dim):
     embeddings = np.concatenate(vectors, 0)
 
     return word2id, id2word, embeddings
-#
+
 # def loademb(emb_param, embed_dim):
 #     """
 #     Load the embedding vector from the dataset.
@@ -126,7 +126,9 @@ def getOptimizer(learning_method, learning_rate):
 
 
 
-def grad_compute(map_optimizer, disc_optimizer):
-
-    pass
+def grad_compute(map_optimizer, disc_optimizer, model ):
+    map_train_step = map_optimizer.minimize(
+                        model.disc_loss, var_list=model.W_trans)
+    disc_train_step = disc_optimizer.minimize(
+                        model.disc_loss, var_list=model.theta_D)
 
