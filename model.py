@@ -3,9 +3,15 @@ tf.set_random_seed(100)
 
 class model(object):
 
-    def __init__(self, src, tgt):
+    def __init__(self, src, tgt, identity, beta):
+
         self.src_emb_ids = tf.placeholder(tf.int32, shape=[None], name="src_emb_ids")
         self.tgt_emb_ids = tf.placeholder(tf.int32, shape=[None], name="tgt_emb_ids")
+
+        self.y = tf.placeholder(tf.float32, shape=[None, None], name="domain_id")
+        self.y_invert = 1 - self.y
+
+        self.isOrthoUpdate = tf.placeholder(tf.bool, [], name="isOrthoUpdate")
         src_emb = tf.Variable(
             src,
             name="src_emb",
@@ -22,11 +28,19 @@ class model(object):
         tgt_lookup = tf.nn.embedding_lookup(
             tgt_emb, self.tgt_emb_ids, name="tgt_lookup")
 
-        self.W_trans = tf.eye(num_rows=src.shape[1],
-                         num_columns=src.shape[1],
-                         dtype=tf.float32,
-                         name="trans")
-        trans_emb = tf.multiply(src_lookup, self.W_trans)
+        self.theta_M = []
+        self.W_trans = tf.Variable(
+            identity,
+            name="trans",
+            dtype=tf.float32)
+        self.theta_M.append(self.W_trans)
+
+        temp = tf.transpose(self.W_trans)
+        W_trans = tf.scalar_mul(1 + beta, self.W_trans) - tf.scalar_mul(beta, tf.matmul(self.W_trans,
+                                        tf.matmul(temp, self.W_trans)))
+
+        trans_emb = tf.matmul(src_lookup, self.W_trans)
+        self.x = tf.concat([trans_emb, tgt_lookup], axis=0)
 
 
         self.theta_D = []
@@ -41,7 +55,7 @@ class model(object):
         self.theta_D.append(hid1)
         self.theta_D.append(b_hid1)
 
-        trans_emb_hid1 = tf.multiply(trans_emb, hid1) + b_hid1
+        trans_emb_hid1 = tf.matmul(self.x, hid1) + b_hid1
         trans_emb_hid1 = tf.nn.leaky_relu(trans_emb_hid1)
         trans_emb_hid1 = tf.nn.dropout(trans_emb_hid1, .9)
 
@@ -52,7 +66,7 @@ class model(object):
                                 dtype=tf.float32,
                                 shape=[2048],
                                 initializer=tf.zeros_initializer())
-        hid1_hid2 = tf.multiply(trans_emb_hid1, hid2) + b_hid2
+        hid1_hid2 = tf.matmul(trans_emb_hid1, hid2) + b_hid2
         hid1_hid2 = tf.nn.leaky_relu(hid1_hid2)
         hid1_hid2 = tf.nn.dropout(hid1_hid2, .9)
 
@@ -67,11 +81,14 @@ class model(object):
                                  dtype=tf.float32,
                                  shape=[1],
                                  initializer=tf.zeros_initializer())
-        hid2_out = tf.multiply(hid1_hid2, out) + b_out
-        hid2_out = tf.nn.leaky_relu(hid2_out)
-        hid2_out = tf.nn.dropout(hid2_out)
+        self.disc_logits = tf.matmul(hid1_hid2, out) + b_out
 
         self.theta_D.append(out)
         self.theta_D.append(b_out)
 
-        logit = tf.nn.sigmoid(hid2_out, name="logit")
+        self.disc_loss = tf.nn.sigmoid_cross_entropy_with_logits(
+                            labels=self.y, logits=self.disc_logits)
+        self.map_loss = tf.nn.sigmoid_cross_entropy_with_logits(
+                            labels=self.y_invert, logits=self.disc_logits)
+
+

@@ -27,8 +27,6 @@ def load_emb(src_add, embed_dim):
                 vect[0] = 0.01
             assert word not in word2id
             assert vect.shape[0] == 100
-            if( i%1000 == 0 ):
-                print(i)
             word2id[word] = len(word2id)
             vectors.append(vect[None])
 
@@ -97,11 +95,11 @@ def num2optimizer(i):
         return None
 
 
-def getOptimizer(learning_method, learning_rate):
+def getOptimizer(learning_method, learning_rate, msg=''):
     assert (learning_method >= 0
             and learning_method <= 9
             and type(learning_method) == type(int(1)))
-    print("Using optimizer ", num2optimizer(learning_method))
+    print(msg+"Using optimizer ", num2optimizer(learning_method))
     if (learning_method == 0):
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
     elif (learning_method == 1):
@@ -128,7 +126,44 @@ def getOptimizer(learning_method, learning_rate):
 
 def grad_compute(map_optimizer, disc_optimizer, model ):
     map_train_step = map_optimizer.minimize(
-                        model.disc_loss, var_list=model.W_trans)
+                        model.disc_loss, var_list=model.theta_M)
     disc_train_step = disc_optimizer.minimize(
                         model.disc_loss, var_list=model.theta_D)
+    return map_train_step, disc_train_step
 
+
+def get_minibatch(src_sz, tgt_sz, batch_sz, smooth=.1):
+    cnt = 0
+    while True:
+        src_ids = np.arange(src_sz)
+        tgt_ids = np.arange(tgt_sz)
+        np.random.seed(cnt)
+        np.random.shuffle(src_ids)
+        np.random.shuffle(tgt_ids)
+        idx = np.arange(min(len(src_ids), len(tgt_ids)))
+        idx = idx[::batch_sz]
+        for i in idx:
+            src_x = src_ids[i:i+batch_sz]
+            tgt_x = src_ids[i:i+batch_sz]
+            if len(src_x) != batch_sz or len(tgt_x) != batch_sz:
+                break
+            src_y = np.vstack([np.tile([1], [batch_sz, 1])])
+            src_y = src_y - smooth
+
+            tgt_y = np.vstack([np.tile([0], [batch_sz, 1])])
+            tgt_y = tgt_y + smooth
+            yield cnt, src_x, src_y, tgt_x, tgt_y
+        cnt+=1
+
+
+def save_dump(word2id, id2word, emb, flag):
+    np.save("./data/word2id"+flag, word2id)
+    np.save("./data/id2word" + flag, id2word)
+    np.save("./data/emb" + flag, emb)
+
+
+def load_dump(flag):
+    word2id = np.load("./data/word2id"+flag+".npy").item()
+    id2word = np.load("./data/id2word" +flag+".npy").item()
+    emb = np.load("./data/emb" + flag + ".npy")
+    return word2id, id2word, emb
