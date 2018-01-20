@@ -41,7 +41,7 @@ class model(object):
         temp2 = lambda: tf.scalar_mul(1 + beta, self.W_trans) - tf.scalar_mul(beta, tf.matmul(self.W_trans,
                                         tf.matmul(temp, self.W_trans)))
         self.W_trans = tf.cond(self.isOrthoUpdate, temp2, temp1)
-
+        self.w_shape = tf.shape(self.W_trans)
 
 
         trans_emb = tf.matmul(src_lookup, self.W_trans)

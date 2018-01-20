@@ -21,13 +21,12 @@ beta = .001
 assert os.path.isfile(src_add)
 assert os.path.isfile(tgt_add)
 
-dump = 0
+dump = 1
 if dump == 0:
     src_word2id, src_id2word, src_emb = load_emb(src_add, embed_dim) #243003
     save_dump(src_word2id, src_id2word, src_emb, 'src')
-
     tgt_word2id, tgt_id2word, tgt_emb = load_emb(tgt_add, embed_dim) #872827
-    save_dump(src_word2id, src_id2word, src_emb, 'tgt')
+    save_dump(tgt_word2id, tgt_id2word, tgt_emb, 'tgt')
 else:
     src_word2id, src_id2word, src_emb = load_dump('src')
     tgt_word2id, tgt_id2word, tgt_emb = load_dump('tgt')
@@ -61,7 +60,6 @@ with my_graph.as_default():
         for i_epoch in range(num_of_epoch):
             print("Starting adversarial training epoch {} ... .. .".format(i_epoch))
             tic = time.time()
-
             for i in range(num_of_batch):
                 epoch, src_x, src_y, tgt_x, tgt_y = generator.__next__()
                 y = np.concatenate((src_y, tgt_y), axis=0)
@@ -80,7 +78,6 @@ with my_graph.as_default():
                 _ = sess.run([emb_model.W_trans], feed_dict=feed_dict)
                 if( i % 500 == 0 ):
                     lr_rate = lr_rate*lr_decay
-                    print("epoch:", epoch, " batch:", i, " dosc_loss:", disc_loss, "  map_loss:", map_loss)
+                    print("epoch:", i_epoch, " batch:", i, " dosc_loss:", disc_loss, "  map_loss:", map_loss)
                 lr_rate = max(lr_rate, min_lr)
-
-        save_model(sess, emb_model, src_id2word, tgt_id2word, 'en-es')
+                save_model(sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, 'en-es'+str(i))
