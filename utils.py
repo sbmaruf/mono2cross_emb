@@ -167,3 +167,23 @@ def load_dump(flag):
     id2word = np.load("./data/id2word" +flag+".npy").item()
     emb = np.load("./data/emb" + flag + ".npy")
     return word2id, id2word, emb
+
+def save_model( sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, name ):
+    W = sess.run([emb_model.W_trans])
+    src_emb = np.matmul(src_emb, W)
+    src_emb = src_emb / np.repeat(np.linalg.norm(src_emb, axis=1, keepdims=True), src_emb.shape[1], axis=1)
+    tgt_emb = tgt_emb / np.repeat(np.linalg.norm(tgt_emb, axis=1, keepdims=True), tgt_emb.shape[1], axis=1)
+
+    l = len(src_id2word)
+    print("total ", l ," source embedding writting on the disk ... .. .")
+    with open("./data/"+name+"-src-vec.txt", "w") as f:
+        f.write(str(l)+" "+str(src_emb.shape[1]))
+        for i in range(l):
+            f.write(str(src_id2word[i])+" "+" ".join(str(x) for x in src_emb[i]))
+
+    l = len(tgt_id2word)
+    print("total ", l, " target embedding writting on the disk ... .. .")
+    with open("./data/"+name+"-tgt-vec.txt", "w") as f:
+        f.write(str(l) + " " + str(tgt_emb.shape[1]))
+        for i in range(l):
+            f.write(str(tgt_id2word[i]) + " " + " ".join(str(x) for x in tgt_emb[i]))
