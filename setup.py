@@ -11,7 +11,7 @@ from model import *
 import time
 import numpy as np
 
-
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 src_add = "./data/sskip.100.vectors"
 tgt_add = "./data/ES64"
