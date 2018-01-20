@@ -32,7 +32,7 @@ else:
     tgt_word2id, tgt_id2word, tgt_emb = load_dump('tgt')
 
 num_of_epoch = 5
-num_of_batch = 1
+num_of_batch = 1000000
 batch_size = 32
 lr_rate = .1
 lr_decay = .98
@@ -61,23 +61,33 @@ with my_graph.as_default():
             print("Starting adversarial training epoch {} ... .. .".format(i_epoch))
             tic = time.time()
             for i in range(num_of_batch):
+
+                for i in range(5):
+                    epoch, src_x, src_y, tgt_x, tgt_y = generator.__next__()
+                    y = np.concatenate((src_y, tgt_y), axis=0)
+                    feed_dict = {
+                        emb_model.src_emb_ids: src_x,
+                        emb_model.tgt_emb_ids: tgct_x,
+                        emb_model.y: y,
+                        emb_model.lr_rate: lr_rate,
+                        emb_model.isOrthoUpdate: np.array(0)
+                    }
+                    _, disc_loss = sess.run([disc_train_step, emb_model.disc_loss], feed_dict=feed_dict)
+                    print("disc_loss", disc_loss)
+
                 epoch, src_x, src_y, tgt_x, tgt_y = generator.__next__()
                 y = np.concatenate((src_y, tgt_y), axis=0)
                 feed_dict = {
                     emb_model.src_emb_ids: src_x,
                     emb_model.tgt_emb_ids: tgt_x,
                     emb_model.y: y,
-                    emb_model.isOrthoUpdate: np.array(0),
-                    emb_model.lr_rate: lr_rate
+                    emb_model.lr_rate: lr_rate,
+                    emb_model.isOrthoUpdate: np.array(0)
                 }
-                _, _, disc_loss, map_loss = sess.run([disc_train_step, map_train_step,
-                                            emb_model.disc_loss, emb_model.map_loss], feed_dict=feed_dict)
-                feed_dict = {
-                    emb_model.isOrthoUpdate: np.array(1)
-                }
-                _ = sess.run([emb_model.W_trans], feed_dict=feed_dict)
+                _, map_loss = sess.run([map_train_step, emb_model.map_loss], feed_dict=feed_dict)
                 if( i % 500 == 0 ):
                     lr_rate = lr_rate*lr_decay
                     print("epoch:", i_epoch, " batch:", i, " dosc_loss:", disc_loss, "  map_loss:", map_loss)
                 lr_rate = max(lr_rate, min_lr)
+
             save_model(sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, 'en-es'+str(i_epoch))

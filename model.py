@@ -37,12 +37,8 @@ class model(object):
             dtype=tf.float32)
         self.theta_M.append(self.W_trans)
         temp = tf.transpose(self.W_trans)
-        temp1 = lambda: self.W_trans
-        temp2 = lambda: tf.scalar_mul(1 + beta, self.W_trans) - tf.scalar_mul(beta, tf.matmul(self.W_trans,
+        self.W_trans = tf.scalar_mul(1 + beta, self.W_trans) - tf.scalar_mul(beta, tf.matmul(self.W_trans,
                                         tf.matmul(temp, self.W_trans)))
-        self.W_trans = tf.cond(self.isOrthoUpdate, temp2, temp1)
-        self.w_shape = tf.shape(self.W_trans)
-
 
         trans_emb = tf.matmul(src_lookup, self.W_trans)
         self.x = tf.concat([trans_emb, tgt_lookup], axis=0)
@@ -95,5 +91,6 @@ class model(object):
                             labels=self.y, logits=self.disc_logits))
         self.map_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
                             labels=self.y_invert, logits=self.disc_logits))
+
 
 
