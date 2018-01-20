@@ -177,7 +177,6 @@ def save_model( sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, nam
     with open("./data/"+name+"-src-vec.txt", "w") as f:
         f.write(str(l)+" "+str(src_emb.shape[1])+"\n")
         for i in range(l):
-            print(i)
             f.write(str(src_id2word[i])+" "+" ".join(str(x) for x in src_emb[i])+"\n")
 
     l = len(tgt_id2word)
@@ -185,5 +184,4 @@ def save_model( sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, nam
     with open("./data/"+name+"-tgt-vec.txt", "w") as f:
         f.write(str(l) + " " + str(tgt_emb.shape[1])+"\n")
         for i in range(l):
-            print(i)
             f.write(str(tgt_id2word[i]) + " " + " ".join(str(x) for x in tgt_emb[i])+"\n")
