@@ -32,7 +32,7 @@ else:
     tgt_word2id, tgt_id2word, tgt_emb = load_dump('tgt')
 
 num_of_epoch = 5
-num_of_batch = 1000000
+num_of_batch = 1
 batch_size = 32
 lr_rate = .1
 lr_decay = .98
@@ -80,4 +80,4 @@ with my_graph.as_default():
                     lr_rate = lr_rate*lr_decay
                     print("epoch:", i_epoch, " batch:", i, " dosc_loss:", disc_loss, "  map_loss:", map_loss)
                 lr_rate = max(lr_rate, min_lr)
-                save_model(sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, 'en-es'+str(i))
+            save_model(sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, 'en-es'+str(i_epoch))
