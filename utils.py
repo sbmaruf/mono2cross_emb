@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import time
 
-def load_emb(src_add, embed_dim):
+def load_emb(src_add, embed_dim, max_vocab,t):
     """
     Reload pretrained embeddings from a text file.
     """
@@ -29,12 +29,14 @@ def load_emb(src_add, embed_dim):
             assert vect.shape[0] == 100
             word2id[word] = len(word2id)
             vectors.append(vect[None])
-
+            if i >= max_vocab:
+                break
 
     print("Loaded {0} pre-trained word embeddings".format(len(vectors)))
 
     id2word = {v: k for k, v in word2id.items()}
     embeddings = np.concatenate(vectors, 0)
+    # np.save("./my_emb_"+t, embeddings)
     return word2id, id2word, embeddings
 
 # def loademb(emb_param, embed_dim):
@@ -125,7 +127,7 @@ def getOptimizer(learning_method, learning_rate, msg=''):
 
 def grad_compute(map_optimizer, disc_optimizer, model ):
     map_train_step = map_optimizer.minimize(
-                        model.disc_loss, var_list=model.theta_M)
+                        model.map_loss, var_list=model.theta_M)
     disc_train_step = disc_optimizer.minimize(
                         model.disc_loss, var_list=model.theta_D)
     return map_train_step, disc_train_step

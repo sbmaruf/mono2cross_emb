@@ -36,6 +36,7 @@ class model(object):
             name="trans",
             dtype=tf.float32)
         self.theta_M.append(self.W_trans)
+        self.w_shape = tf.shape(self.W_trans)
         temp = tf.transpose(self.W_trans)
         self.W_trans = tf.scalar_mul(1 + beta, self.W_trans) - tf.scalar_mul(beta, tf.matmul(self.W_trans,
                                         tf.matmul(temp, self.W_trans)))

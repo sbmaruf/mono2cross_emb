@@ -17,15 +17,16 @@ src_add = "./data/sskip.100.vectors"
 tgt_add = "./data/ES64"
 embed_dim = 100
 beta = .001
+max_vocab = 200000
 
 assert os.path.isfile(src_add)
 assert os.path.isfile(tgt_add)
 
-dump = 1
+dump = 0
 if dump == 0:
-    src_word2id, src_id2word, src_emb = load_emb(src_add, embed_dim) #243003
+    src_word2id, src_id2word, src_emb = load_emb(src_add, embed_dim, max_vocab, "src") #243003
     save_dump(src_word2id, src_id2word, src_emb, 'src')
-    tgt_word2id, tgt_id2word, tgt_emb = load_emb(tgt_add, embed_dim) #872827
+    tgt_word2id, tgt_id2word, tgt_emb = load_emb(tgt_add, embed_dim,max_vocab, "tgt") #872827
     save_dump(tgt_word2id, tgt_id2word, tgt_emb, 'tgt')
 else:
     src_word2id, src_id2word, src_emb = load_dump('src')
@@ -62,18 +63,18 @@ with my_graph.as_default():
             tic = time.time()
             for i in range(num_of_batch):
 
-                for i in range(5):
+                for j in range(5):
                     epoch, src_x, src_y, tgt_x, tgt_y = generator.__next__()
                     y = np.concatenate((src_y, tgt_y), axis=0)
                     feed_dict = {
                         emb_model.src_emb_ids: src_x,
-                        emb_model.tgt_emb_ids: tgct_x,
+                        emb_model.tgt_emb_ids: tgt_x,
                         emb_model.y: y,
                         emb_model.lr_rate: lr_rate,
                         emb_model.isOrthoUpdate: np.array(0)
                     }
                     _, disc_loss = sess.run([disc_train_step, emb_model.disc_loss], feed_dict=feed_dict)
-                    print("disc_loss", disc_loss)
+                    # print("disc_loss", disc_loss)
 
                 epoch, src_x, src_y, tgt_x, tgt_y = generator.__next__()
                 y = np.concatenate((src_y, tgt_y), axis=0)
@@ -85,6 +86,7 @@ with my_graph.as_default():
                     emb_model.isOrthoUpdate: np.array(0)
                 }
                 _, map_loss = sess.run([map_train_step, emb_model.map_loss], feed_dict=feed_dict)
+                # print(i,map_loss)
                 if( i % 500 == 0 ):
                     lr_rate = lr_rate*lr_decay
                     print("epoch:", i_epoch, " batch:", i, " dosc_loss:", disc_loss, "  map_loss:", map_loss)
