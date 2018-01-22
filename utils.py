@@ -133,28 +133,47 @@ def grad_compute(map_optimizer, disc_optimizer, model ):
     return map_train_step, disc_train_step
 
 
-def get_minibatch(src_sz, tgt_sz, batch_sz, smooth=.1):
-    cnt = 0
-    while True:
-        src_ids = np.arange(src_sz)
-        tgt_ids = np.arange(tgt_sz)
-        np.random.seed(cnt)
-        np.random.shuffle(src_ids)
-        np.random.shuffle(tgt_ids)
-        idx = np.arange(min(len(src_ids), len(tgt_ids)))
-        idx = idx[::batch_sz]
-        for i in idx:
-            src_x = src_ids[i:i+batch_sz]
-            tgt_x = src_ids[i:i+batch_sz]
-            if len(src_x) != batch_sz or len(tgt_x) != batch_sz:
-                break
-            src_y = np.vstack([np.tile([1], [batch_sz, 1])])
-            src_y = src_y - smooth
 
-            tgt_y = np.vstack([np.tile([0], [batch_sz, 1])])
-            tgt_y = tgt_y + smooth
-            yield cnt, src_x, src_y, tgt_x, tgt_y
-        cnt+=1
+# def get_minibatch(src_sz, tgt_sz, batch_sz, smooth=.1):
+#     cnt = 0
+#     while True:
+#         src_ids = np.arange(src_sz)
+#         tgt_ids = np.arange(tgt_sz)
+#         np.random.seed(cnt)
+#         np.random.shuffle(src_ids)
+#         np.random.shuffle(tgt_ids)
+#         idx = np.arange(min(len(src_ids), len(tgt_ids)))
+#         idx = idx[::batch_sz]
+#         for i in idx:
+#             src_x = src_ids[i:i+batch_sz]
+#             tgt_x = src_ids[i:i+batch_sz]
+#             if len(src_x) != batch_sz or len(tgt_x) != batch_sz:
+#                 break
+#             src_y = np.vstack([np.tile([1], [batch_sz, 1])])
+#             src_y = src_y - smooth
+#
+#             tgt_y = np.vstack([np.tile([0], [batch_sz, 1])])
+#             tgt_y = tgt_y + smooth
+#             yield cnt, src_x, src_y, tgt_x, tgt_y
+#         cnt+=1
+
+def get_minibatch(batch_sz, most_frq):
+
+    while( True ):
+
+        # src_x = np.random.randint(low =0, high=most_frq , size=batch_sz)
+        # tgt_x = np.random.randint(low=0, high=most_frq, size=batch_sz)
+        #
+        src_x = np.arange(32)
+        tgt_x = np.arange(32)
+        print(src_x)
+        print(tgt_x)
+        src_y = np.vstack([np.tile([1], [batch_sz, 1])])
+        src_y = src_y - .1
+        tgt_y = np.vstack([np.tile([0], [batch_sz, 1])])
+        tgt_y = tgt_y + .1
+        yield src_x, src_y, tgt_x, tgt_y
+
 
 
 def save_dump(word2id, id2word, emb, flag):
