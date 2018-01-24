@@ -14,18 +14,18 @@ import numpy as np
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 src_add = "./data/sskip.100.vectors"
-tgt_add = "./data/ES100"
+tgt_add = "./data/ES64"
 embed_dim = 100
 beta = .001
 max_vocab = 200000
 num_of_epoch = 5
-num_of_batch = 1000000
+num_of_batch = 1
 batch_size = 32
 lr_rate = .1
 lr_decay = .98
 min_lr = 0.000001
-dropout_map = .5
-dropout_hid = .5
+dropout_map = .1
+dropout_hid = 1
 
 assert os.path.isfile(src_add)
 assert os.path.isfile(tgt_add)
@@ -41,7 +41,7 @@ else:
     tgt_word2id, tgt_id2word, tgt_emb = load_dump('tgt')
 
 
-generator = get_minibatch(batch_size, 32)
+generator = get_minibatch(batch_size, max_vocab)
 
 
 tf.reset_default_graph()
@@ -81,34 +81,34 @@ with my_graph.as_default():
                         emb_model.y: y,
                         emb_model.lr_rate: lr_rate
                     }
-                    disc_loss = sess.run([emb_model.disc_loss], feed_dict=feed_dict)
-                    print("disc_loss(before_update)", disc_loss)
-                    _ = sess.run([disc_train_step], feed_dict=feed_dict)
-                    disc_loss = sess.run([emb_model.disc_loss], feed_dict=feed_dict)
-                    print("disc_loss(after_update)", disc_loss)
-                    input(":\n")
-                #
-                # src_x, src_y, tgt_x, tgt_y = generator.__next__()
-                # y = np.concatenate((src_y, tgt_y), axis=0)
-                # feed_dict = {
-                #     emb_model.src_emb_ids: src_x,
-                #     emb_model.tgt_emb_ids: tgt_x,
-                #     emb_model.y: y,
-                #     emb_model.lr_rate: lr_rate
-                # }
+                    # disc_loss = sess.run([emb_model.disc_loss], feed_dict=feed_dict)
+                    _, disc_loss = sess.run([disc_train_step, emb_model.disc_loss], feed_dict=feed_dict)
+                    # disc_loss = sess.run([emb_model.disc_loss], feed_dict=feed_dict)
+                    # print(j, "disc_loss:", disc_loss)
+
+                src_x, src_y, tgt_x, tgt_y = generator.__next__()
+                y = np.concatenate((src_y, tgt_y), axis=0)
+                feed_dict = {
+                    emb_model.src_emb_ids: src_x,
+                    emb_model.tgt_emb_ids: tgt_x,
+                    emb_model.y: y,
+                    emb_model.lr_rate: lr_rate
+                }
                 # map_loss = sess.run([emb_model.map_loss], feed_dict=feed_dict)
-                # print("map_loss(before_update)", map_loss)
-                # _ = sess.run([map_train_step], feed_dict=feed_dict)
-                # map_loss = sess.run([emb_model.map_loss], feed_dict=feed_dict)
-                # print("map_loss(after_update)", map_loss)
-                emb_model_W_trans = sess.run([emb_model.W_trans])
-                print(emb_model_W_trans)
+                _, map_loss = sess.run([map_train_step, emb_model.map_loss], feed_dict=feed_dict)
+
+                # print("#map_loss:", map_loss)
+                # emb_model_W_trans = sess.run([emb_model.W_trans])
+                # print(emb_model_W_trans)
+
                 _ = sess.run([emb_model.orthogonal_update_step])
-                emb_model_W_trans = sess.run([emb_model.W_trans])
-                print(emb_model_W_trans)
-                # if( i % 1 == 0 ):
-                #     lr_rate = lr_rate*lr_decay
-                #     print("epoch:", i_epoch, " batch:", i, "  disc_loss:", disc_loss, "  map_loss:", map_loss)
-                # lr_rate = max(lr_rate, min_lr)
+
+                # emb_model_W_trans = sess.run([emb_model.W_trans])
+                # print(emb_model_W_trans)
+
+                if( i % 500 == 0 ):
+                    lr_rate = lr_rate*lr_decay
+                    print("epoch:", i_epoch, " batch:", i, "  disc_loss:", disc_loss, "  map_loss:", map_loss)
+                lr_rate = max(lr_rate, min_lr)
 
             save_model(sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, 'en-es'+str(i_epoch))

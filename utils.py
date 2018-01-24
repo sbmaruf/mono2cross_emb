@@ -188,7 +188,7 @@ def load_dump(flag):
     return word2id, id2word, emb
 
 def save_model( sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, name ):
-    W, _ = sess.run([emb_model.W_trans, emb_model.w_shape], feed_dict={emb_model.isOrthoUpdate:np.array(0)})
+    W, _ = sess.run([emb_model.W_trans, emb_model.w_shape])
     src_emb = np.matmul(src_emb, W)
     src_emb = src_emb / np.repeat(np.linalg.norm(src_emb, axis=1, keepdims=True), src_emb.shape[1], axis=1)
     tgt_emb = tgt_emb / np.repeat(np.linalg.norm(tgt_emb, axis=1, keepdims=True), tgt_emb.shape[1], axis=1)
