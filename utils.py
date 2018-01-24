@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import time
 
-def load_emb(src_add, embed_dim, max_vocab,t):
+def load_emb(src_add, embed_dim, max_vocab, t):
     """
     Reload pretrained embeddings from a text file.
     """
@@ -129,7 +129,7 @@ def grad_compute(map_optimizer, disc_optimizer, model ):
     map_train_step = map_optimizer.minimize(
                         model.map_loss, var_list=model.theta_M)
     disc_train_step = disc_optimizer.minimize(
-                        model.disc_loss, var_list=model.theta_D)
+        model.disc_loss, var_list=model.theta_D)
     return map_train_step, disc_train_step
 
 
@@ -161,13 +161,12 @@ def get_minibatch(batch_sz, most_frq):
 
     while( True ):
 
-        # src_x = np.random.randint(low =0, high=most_frq , size=batch_sz)
-        # tgt_x = np.random.randint(low=0, high=most_frq, size=batch_sz)
+        src_x = np.random.randint(low =0, high=most_frq , size=batch_sz)
+        tgt_x = np.random.randint(low=0, high=most_frq, size=batch_sz)
         #
-        src_x = np.arange(32)
-        tgt_x = np.arange(32)
-        print(src_x)
-        print(tgt_x)
+        # src_x = np.arange(32)
+        # tgt_x = np.arange(32)
+
         src_y = np.vstack([np.tile([1], [batch_sz, 1])])
         src_y = src_y - .1
         tgt_y = np.vstack([np.tile([0], [batch_sz, 1])])
