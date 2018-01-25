@@ -26,12 +26,12 @@ lr_decay = .98
 min_lr = 1e-6
 dropout_map = .9
 dropout_hid = 1
-
+_name = 'MUSE_orig'
 
 assert os.path.isfile(src_add)
 assert os.path.isfile(tgt_add)
 
-dump = 1
+dump = 0
 if dump == 0:
     src_word2id, src_id2word, src_emb = load_emb(src_add, embed_dim, max_vocab, "src") #243003
     save_dump(src_word2id, src_id2word, src_emb, 'src')
@@ -106,7 +106,7 @@ with my_graph.as_default():
                     emb_model.lr_rate: lr_rate
                 }
                 # map_loss = sess.run([emb_model.map_loss], feed_dict=feed_dict)
-                _, map_loss = sess.run([map_train_step, emb_model.map_loss], feed_dict=feed_dict)git 
+                _, map_loss = sess.run([map_train_step, emb_model.map_loss], feed_dict=feed_dict)
 
                 # print("#map_loss:", map_loss)
                 # emb_model_W_trans, _ = sess.run([emb_model.W_trans, emb_model.w_shape])
@@ -123,4 +123,4 @@ with my_graph.as_default():
 
             lr_rate = lr_rate * lr_decay
             lr_rate = max(lr_rate, min_lr)
-            save_model(sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, 'en-es'+str(i_epoch))
+            save_model(sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, 'en-es'+str(i_epoch)+_name)
