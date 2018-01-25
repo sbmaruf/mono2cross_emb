@@ -129,7 +129,7 @@ def grad_compute(map_optimizer, disc_optimizer, model ):
     map_train_step = map_optimizer.minimize(
                         model.map_loss, var_list=model.theta_M)
     disc_train_step = disc_optimizer.minimize(
-        model.disc_loss, var_list=model.theta_D)
+                        model.disc_loss, var_list=model.theta_D)
     return map_train_step, disc_train_step
 
 
@@ -161,12 +161,12 @@ def get_minibatch(batch_sz, most_frq):
 
     while( True ):
 
-        src_x = np.random.randint(low =0, high=most_frq , size=batch_sz)
+        src_x = np.random.randint(low=0, high=most_frq, size=batch_sz)
         tgt_x = np.random.randint(low=0, high=most_frq, size=batch_sz)
         #
         # src_x = np.arange(32)
         # tgt_x = np.arange(32)
-
+        # print(src_x, tgt_x)
         src_y = np.vstack([np.tile([1], [batch_sz, 1])])
         src_y = src_y - .1
         tgt_y = np.vstack([np.tile([0], [batch_sz, 1])])
@@ -193,7 +193,7 @@ def save_model( sess, emb_model, src_emb, tgt_emb, src_id2word, tgt_id2word, nam
     src_emb = src_emb / np.repeat(np.linalg.norm(src_emb, axis=1, keepdims=True), src_emb.shape[1], axis=1)
     tgt_emb = tgt_emb / np.repeat(np.linalg.norm(tgt_emb, axis=1, keepdims=True), tgt_emb.shape[1], axis=1)
     l = len(src_id2word)
-    print("total ", l ," source embedding writting on the disk ... .. .")
+    print("total ", l," source embedding writting on the disk ... .. .")
     with open("./data/"+name+"-src-vec.txt", "w") as f:
         f.write(str(l)+" "+str(src_emb.shape[1])+"\n")
         for i in range(l):

@@ -1,6 +1,19 @@
 import tensorflow as tf
 tf.set_random_seed(100)
 import numpy as np
+import math
+
+
+def get_numpy_variable(row, col, d = 2 ):
+    stdv = 1. / math.sqrt(row)
+    if d != 1 :
+        ret = np.random.uniform(-stdv, stdv, (row, col))
+    else :
+        ret = np.random.uniform(-stdv, stdv, (row))
+    return ret
+
+
+
 
 class model(object):
 
@@ -57,19 +70,22 @@ class model(object):
             self.x = tf.concat([self.trans_emb, self.tgt_lookup], axis=0)
             self.x = tf.nn.dropout(self.x, dropout_map)
 
-
+        np.random.seed(5)
 
         self.theta_D = []
         with tf.variable_scope("hiddedn-layer-1"):
+            # self.hid1 = tf.get_variable(name="hid1",
+            #                         dtype=tf.float32,
+            #                         shape=[src.shape[1], 2048])
+            # self.b_hid1 = tf.get_variable(name="b_hid1",
+            #                         dtype=tf.float32,
+            #                         shape=[2048],
+            #                         initializer=tf.zeros_initializer())
+            arr = get_numpy_variable(src.shape[1], 2048)
+            self.hid1 = tf.Variable(arr, dtype=tf.float32, name='hid1')
+            arr = get_numpy_variable(2048, 1 , d=1)
+            self.b_hid1 = tf.Variable(arr, dtype= tf.float32, name='b_hid1')
 
-            self.hid1 = tf.get_variable(name="hid1",
-                                    dtype=tf.float32,
-                                    shape=[src.shape[1], 2048])
-            # self.hid1 = tf.Variable(np.ones((src.shape[1], 2048)), dtype=tf.float32, name="hid1")
-            self.b_hid1 = tf.get_variable(name="b_hid1",
-                                    dtype=tf.float32,
-                                    shape=[2048],
-                                    initializer=tf.zeros_initializer())
             self.theta_D.append(self.hid1)
             self.theta_D.append(self.b_hid1)
 
@@ -79,14 +95,19 @@ class model(object):
 
 
         with tf.variable_scope("hidden-layer-2"):
-            self.hid2 = tf.get_variable(name="hid2",
-                                    dtype=tf.float32,
-                                    shape=[2048, 2048])
-            # self.hid2 = tf.Variable(np.ones((2048, 2048)), dtype=tf.float32, name="hid2")
-            self.b_hid2 = tf.get_variable(name="b_hid2",
-                                    dtype=tf.float32,
-                                    shape=[2048],
-                                    initializer=tf.zeros_initializer())
+            # self.hid2 = tf.get_variable(name="hid2",
+            #                         dtype=tf.float32,
+            #                         shape=[2048, 2048])
+            # self.b_hid2 = tf.get_variable(name="b_hid2",
+            #                         dtype=tf.float32,
+            #                         shape=[2048],
+            #                         initializer=tf.zeros_initializer())
+            arr = get_numpy_variable(2048, 2048)
+            self.hid2 = tf.Variable(arr, dtype=tf.float32, name='hid2')
+            arr = get_numpy_variable(2048, 1 , d=1)
+            self.b_hid2 = tf.Variable(arr, dtype= tf.float32, name='b_hid2')
+
+
             self.theta_D.append(self.hid2)
             self.theta_D.append(self.b_hid2)
 
@@ -98,14 +119,18 @@ class model(object):
 
 
         with tf.variable_scope("output-layer"):
-            self.out = tf.get_variable(name="out",
-                                   dtype=tf.float32,
-                                   shape=[2048, 1])
-            # self.out = tf.Variable(np.ones((2048, 1)), dtype=tf.float32, name="out")
-            self.b_out = tf.get_variable(name="b_out",
-                                     dtype=tf.float32,
-                                     shape=[1],
-                                     initializer=tf.zeros_initializer())
+            # self.out = tf.get_variable(name="out",
+            #                        dtype=tf.float32,
+            #                        shape=[2048, 1])
+            # self.b_out = tf.get_variable(name="b_out",
+            #                          dtype=tf.float32,
+            #                          shape=[1],
+            #                          initializer=tf.zeros_initializer())
+            arr = get_numpy_variable(2048, 1)
+            self.out = tf.Variable(arr, dtype=tf.float32, name='out')
+            arr = get_numpy_variable(1, 1, d=1)
+            self.b_out = tf.Variable(arr, dtype= tf.float32, name='b_out')
+
             self.theta_D.append(self.out)
             self.theta_D.append(self.b_out)
             self.disc_logits = tf.matmul(self.hid1_hid2_dp, self.out) + self.b_out
