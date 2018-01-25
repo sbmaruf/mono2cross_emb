@@ -157,12 +157,12 @@ def grad_compute(map_optimizer, disc_optimizer, model ):
 #             yield cnt, src_x, src_y, tgt_x, tgt_y
 #         cnt+=1
 
-def get_minibatch(batch_sz, most_frq):
+def get_minibatch(batch_sz, frq_x, frq_y):
 
     while( True ):
 
-        src_x = np.random.randint(low=0, high=most_frq, size=batch_sz)
-        tgt_x = np.random.randint(low=0, high=most_frq, size=batch_sz)
+        src_x = np.random.randint(low=0, high=frq_x, size=batch_sz)
+        tgt_x = np.random.randint(low=0, high=frq_y, size=batch_sz)
         #
         # src_x = np.arange(32)
         # tgt_x = np.arange(32)
